@@ -30,24 +30,37 @@ def find_duplicates_fast(data):
 
 def flawed_benchmark():
     """
-    This benchmarking function contains several methodological errors.
-    Rewrite this function to properly and fairly compare the two algorithms to demonstrate their scaling behavior.
+    Fairly compare the two duplicate-detection algorithms across several input sizes.
+    This benchmarking setup isolates the algorithms themselves rather than timing data
+    generation or random variation.
     """
-    print("Running flawed benchmark...")
-    
-    n = 1000
-    
-    start_time = time.time()
-    data1 = [random.randint(i, 10000) for i in range(n)]
-    find_duplicates_slow(data1)
-    end_time = time.time()
-    print(f"Slow algorithm took: {end_time - start_time} seconds")
-    
-    start_time_2 = time.time()
-    data2 = [random.randint(i, 10000) for i in range(n)]
-    find_duplicates_fast(data2)
-    end_time_2 = time.time()
-    print(f"Fast algorithm took: {end_time_2 - start_time_2} seconds")
+    sizes = [100, 200, 500, 1000, 2000, 5000]
+    trials = 5
+    rng = random.Random(42)
+
+    print(f"{'n':>8} {'slow avg (s)':>14} {'fast avg (s)':>14} {'ratio':>10}")
+    print("-" * 52)
+
+    for n in sizes:
+        data = rng.sample(range(2 * n), n)
+
+        slow_times = []
+        fast_times = []
+
+        for _ in range(trials):
+            start = time.perf_counter()
+            find_duplicates_slow(data)
+            slow_times.append(time.perf_counter() - start)
+
+            start = time.perf_counter()
+            find_duplicates_fast(data)
+            fast_times.append(time.perf_counter() - start)
+
+        slow_avg = sum(slow_times) / len(slow_times)
+        fast_avg = sum(fast_times) / len(fast_times)
+        ratio = float("inf") if fast_avg == 0 else slow_avg / fast_avg
+
+        print(f"{n:>8} {slow_avg:>14.8f} {fast_avg:>14.8f} {ratio:>10.2f}x")
 
 
 if __name__ == "__main__":
